@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, DollarSign } from "lucide-react";
+import { Plus, Edit2, Trash2, DollarSign, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const HealthcareServicesApp = () => {
@@ -12,6 +12,7 @@ const HealthcareServicesApp = () => {
     price: "",
   });
   const [editingService, setEditingService] = useState(null);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const savedServices = localStorage.getItem("healthcareServices");
@@ -24,9 +25,23 @@ const HealthcareServicesApp = () => {
     localStorage.setItem("healthcareServices", JSON.stringify(services));
   }, [services]);
 
+  const validateForm = (service) => {
+    const errors = {};
+    if (!service.name.trim()) errors.name = "Service name is required";
+    if (!service.description.trim())
+      errors.description = "Description is required";
+    if (!service.price || isNaN(service.price) || Number(service.price) <= 0) {
+      errors.price = "Price must be a positive number";
+    }
+    return errors;
+  };
+
   const addService = (e) => {
     e.preventDefault();
-    if (newService.name && newService.description && newService.price) {
+    const validationErrors = validateForm(newService);
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length === 0) {
       setServices([...services, { ...newService, id: Date.now() }]);
       setNewService({ name: "", description: "", price: "" });
     }
@@ -34,11 +49,10 @@ const HealthcareServicesApp = () => {
 
   const updateService = (e) => {
     e.preventDefault();
-    if (
-      editingService.name &&
-      editingService.description &&
-      editingService.price
-    ) {
+    const validationErrors = validateForm(editingService);
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length === 0) {
       setServices(
         services.map((service) =>
           service.id === editingService.id ? editingService : service
@@ -51,6 +65,39 @@ const HealthcareServicesApp = () => {
   const deleteService = (id) => {
     setServices(services.filter((service) => service.id !== id));
   };
+
+  const InputField = ({
+    name,
+    label,
+    value,
+    onChange,
+    error,
+    type = "text",
+  }) => (
+    <div className="relative">
+      <input
+        type={type}
+        placeholder={label}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`w-full p-3 border-2 ${
+          error ? "border-red-300" : "border-indigo-200"
+        } rounded-lg focus:outline-none focus:ring-2 ${
+          error ? "focus:ring-red-400" : "focus:ring-indigo-400"
+        } focus:border-transparent transition duration-200`}
+        required
+      />
+      <label className="absolute text-sm text-indigo-500 -top-2.5 left-2 px-1 bg-white">
+        {label}
+      </label>
+      {error && (
+        <div className="text-red-500 text-sm mt-1 flex items-center">
+          <AlertCircle size={16} className="mr-1" />
+          {error}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 p-8">
@@ -69,73 +116,44 @@ const HealthcareServicesApp = () => {
             {editingService ? "Edit Service" : "Add New Service"}
           </h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Service Name"
-                value={editingService ? editingService.name : newService.name}
-                onChange={(e) =>
-                  editingService
-                    ? setEditingService({
-                        ...editingService,
-                        name: e.target.value,
-                      })
-                    : setNewService({ ...newService, name: e.target.value })
-                }
-                className="w-full p-3 border-2 border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition duration-200"
-                required
-              />
-              <label className="absolute text-sm text-indigo-500 -top-2.5 left-2 px-1 bg-white">
-                Service Name
-              </label>
-            </div>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Description"
-                value={
-                  editingService
-                    ? editingService.description
-                    : newService.description
-                }
-                onChange={(e) =>
-                  editingService
-                    ? setEditingService({
-                        ...editingService,
-                        description: e.target.value,
-                      })
-                    : setNewService({
-                        ...newService,
-                        description: e.target.value,
-                      })
-                }
-                className="w-full p-3 border-2 border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition duration-200"
-                required
-              />
-              <label className="absolute text-sm text-indigo-500 -top-2.5 left-2 px-1 bg-white">
-                Description
-              </label>
-            </div>
-            <div className="relative">
-              <input
-                type="number"
-                placeholder="Price"
-                value={editingService ? editingService.price : newService.price}
-                onChange={(e) =>
-                  editingService
-                    ? setEditingService({
-                        ...editingService,
-                        price: e.target.value,
-                      })
-                    : setNewService({ ...newService, price: e.target.value })
-                }
-                className="w-full p-3 border-2 border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition duration-200"
-                required
-              />
-              <label className="absolute text-sm text-indigo-500 -top-2.5 left-2 px-1 bg-white">
-                Price
-              </label>
-            </div>
+            <InputField
+              name="name"
+              label="Service Name"
+              value={editingService ? editingService.name : newService.name}
+              onChange={(value) =>
+                editingService
+                  ? setEditingService({ ...editingService, name: value })
+                  : setNewService({ ...newService, name: value })
+              }
+              error={errors.name}
+            />
+            <InputField
+              name="description"
+              label="Description"
+              value={
+                editingService
+                  ? editingService.description
+                  : newService.description
+              }
+              onChange={(value) =>
+                editingService
+                  ? setEditingService({ ...editingService, description: value })
+                  : setNewService({ ...newService, description: value })
+              }
+              error={errors.description}
+            />
+            <InputField
+              name="price"
+              label="Price"
+              type="number"
+              value={editingService ? editingService.price : newService.price}
+              onChange={(value) =>
+                editingService
+                  ? setEditingService({ ...editingService, price: value })
+                  : setNewService({ ...newService, price: value })
+              }
+              error={errors.price}
+            />
           </div>
           <button
             type="submit"

@@ -1,20 +1,20 @@
-🏥 Healthcare Services App
+## 🏥 Healthcare Services App
 A React-based web application for managing healthcare services. Users can add, edit, and delete services, with data persistence using local storage.
-✨ Features
 
+### ✨ Features
 ➕ Add new healthcare services with name, description, and price
 ✏️ Edit existing services
 🗑️ Delete services
 📱 Responsive design
 💾 Data persistence using local storage
 
-🚀 Prerequisites
+### 🚀 Prerequisites
 Before you begin, ensure you have the following installed:
 
 Node.js (v14.0.0 or later)
 npm (v6.0.0 or later)
 
-🛠️ Setup and Running the Project
+### 🛠️ Setup and Running the Project
 
 Clone the repository:
 Copygit clone https://github.com/yourusername/healthcare-services-app.git
@@ -28,11 +28,11 @@ Copynpm run dev
 
 Open your browser and navigate to http://localhost:3000 to view the app.
 
-🏗️ Building for Production
+### 🏗️ Building for Production
 To create a production build, run:
 Copynpm run build
 This will generate a build or dist folder (depending on your setup) with production-ready files.
-🌐 Deployment
+### 🌐 Deployment
 To deploy this application, you have several options:
 
 1. Vercel (Recommended for Next.js projects)
